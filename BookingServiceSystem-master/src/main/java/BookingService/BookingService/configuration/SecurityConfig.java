@@ -31,6 +31,7 @@ public class    SecurityConfig {
             "/auth/token",       // Lấy token
             "/auth/introspect"  , // Kiểm tra token
             "/auth/logout"       // logout
+            , "/auth/refresh"    // refresh token
     };
 
     @Value("${jwt.signerKey}")

@@ -3,6 +3,7 @@ package BookingService.BookingService.service;
 import BookingService.BookingService.dto.request.AuthenticationRequest;
 import BookingService.BookingService.dto.request.IntrospectRequest;
 import BookingService.BookingService.dto.request.LogoutRequest;
+import BookingService.BookingService.dto.request.RefreshRequest;
 import BookingService.BookingService.dto.response.AuthenticationResponse;
 import BookingService.BookingService.dto.response.IntrospectResponse;
 import BookingService.BookingService.entity.InvalidatedToken;
@@ -45,8 +46,6 @@ public class AuthenticationService {
 
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
-
-
 
 
     @NonFinal
@@ -100,7 +99,7 @@ public class AuthenticationService {
                     .subject(user.getEmail())
                     .issuer("BookingService")
                     .issueTime(new Date())
-                    .expirationTime(Date.from(Instant.now().plus(1, ChronoUnit.HOURS)))
+                    .expirationTime(Date.from(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS)))
                     .jwtID(UUID.randomUUID().toString())
                     .claim("role", user.getRole().name())
                     .build();
@@ -158,4 +157,24 @@ public class AuthenticationService {
             log.info("Token already expired");
         }
     }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getToken(), true);
+
+        var jit = signedJWT.getJWTClaimsSet().getJWTID(); // lay id cua token
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();  // lay thoi gian
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+        var email = signedJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED)); // lay thong tin user
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
+    }
+
 }

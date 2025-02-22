@@ -1,10 +1,7 @@
 package BookingService.BookingService.controller;
 
 
-import BookingService.BookingService.dto.request.ApiResponse;
-import BookingService.BookingService.dto.request.AuthenticationRequest;
-import BookingService.BookingService.dto.request.IntrospectRequest;
-import BookingService.BookingService.dto.request.LogoutRequest;
+import BookingService.BookingService.dto.request.*;
 import BookingService.BookingService.dto.response.AuthenticationResponse;
 import BookingService.BookingService.dto.response.IntrospectResponse;
 import BookingService.BookingService.service.AuthenticationService;
@@ -45,5 +42,12 @@ public class AuthenticationController {
     ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request)
+            throws ParseException, JOSEException {
+        var result = authenticationService.refreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder().result(result).build();
     }
 }
