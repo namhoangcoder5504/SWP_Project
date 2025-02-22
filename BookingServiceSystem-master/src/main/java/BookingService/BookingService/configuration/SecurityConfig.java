@@ -2,6 +2,7 @@ package BookingService.BookingService.configuration;
 
 
 import BookingService.BookingService.enums.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,11 +29,16 @@ public class    SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/users",            // Tạo user
             "/auth/token",       // Lấy token
-            "/auth/introspect"   // Kiểm tra token
+            "/auth/introspect"  , // Kiểm tra token
+            "/auth/logout"       // logout
     };
 
     @Value("${jwt.signerKey}")
     private String signerKey;
+
+
+    @Autowired
+    private CustomJwtDecoder customJwtDecoder;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -48,7 +54,7 @@ public class    SecurityConfig {
         // Sử dụng Resource Server JWT
         http.oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
-                        .decoder(jwtDecoder())
+                        .decoder(customJwtDecoder)
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 ).authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
