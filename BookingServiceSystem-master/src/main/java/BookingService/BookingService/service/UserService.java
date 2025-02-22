@@ -37,24 +37,30 @@ public class UserService {
     /**
      * Tạo user mới
      */
-    public User createUser(UserCreationRequest request) {
-        // Kiểm tra trùng email
+    public UserResponse createUser(UserCreationRequest request) {
+        // Kiểm tra email trùng
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-        // Map DTO -> Entity
+
+        // Chuyển đổi DTO thành Entity
         User user = userMapper.toUser(request);
 
-        // Encode password
+        // Mã hóa mật khẩu
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // Gán role mặc định
+        // Gán vai trò mặc định là CUSTOMER
         user.setRole(Role.CUSTOMER);
-        // Set thời gian tạo/cập nhật
+
+        // Thiết lập thời gian tạo và cập nhật
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
-        return userRepository.save(user);
+        // Lưu vào cơ sở dữ liệu
+        userRepository.save(user);
+
+        // Trả về đối tượng phản hồi
+        return userMapper.toUserResponse(user);
     }
 
     /**

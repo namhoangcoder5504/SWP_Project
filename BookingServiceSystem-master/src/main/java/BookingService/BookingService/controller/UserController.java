@@ -38,6 +38,18 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     // Tạo user - mở public (không cần token)
+
+
+
+    @PostMapping
+    public UserResponse createUser(@Valid @RequestBody UserCreationRequest request) {
+        return userService.createUser(request);
+    }
+
+
+
+
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserResponse>> getUsers() {
@@ -48,6 +60,10 @@ public class UserController {
                 .result(userService.getAllUsers())
                 .build();
     }
+
+
+
+
 
     // GET thông tin chi tiết user
     // Nếu không phải ADMIN, user chỉ được truy xuất thông tin của chính mình
